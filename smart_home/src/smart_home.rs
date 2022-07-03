@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use string_builder::Builder;
 
-use crate::device_info_provider::{DeviceId, DeviceInfoProvider};
+use crate::{
+    device_info_provider::{DeviceId, DeviceInfoProvider},
+    error::{DeviceError, RoomError},
+};
 
 pub struct ReportParam {
     pub room_name: String,
@@ -31,9 +34,9 @@ impl Home {
         }
         result
     }
-    pub fn room_add(&mut self, room_name: &str) -> Result<(), String> {
+    pub fn room_add(&mut self, room_name: &str) -> Result<(), RoomError> {
         if self.rooms.contains_key(room_name) {
-            Result::Err(format!("Комната {} уже зарегистрирована", room_name))
+            Result::Err(RoomError::Duplicated(room_name.to_string()))
         } else {
             self.rooms.insert(room_name.to_string(), HashMap::new());
             Result::Ok(())
@@ -42,9 +45,9 @@ impl Home {
     pub fn room_remove(&mut self, room_name: &str) {
         self.rooms.remove(room_name);
     }
-    pub fn device_list(&self, room_name: &str) -> Result<Vec<String>, String> {
+    pub fn device_list(&self, room_name: &str) -> Result<Vec<String>, RoomError> {
         match self.rooms.get(room_name) {
-            None => Result::Err(format!("Комната {} не зарегистрирована", room_name)),
+            None => Result::Err(RoomError::NoRoom(room_name.to_string())),
             Some(devices) => {
                 let mut result: Vec<String> = Vec::with_capacity(devices.len());
                 for key in self.rooms.keys() {
@@ -59,17 +62,17 @@ impl Home {
         room_name: &str,
         device_name: &str,
         device_id: DeviceId,
-    ) -> Result<(), String> {
+    ) -> Result<(), DeviceError> {
         match self.rooms.get_mut(room_name) {
-            None => Result::Err(format!("Комната {} не зарегистрирована", room_name)),
+            None => Result::Err(DeviceError::NoRoom(room_name.to_string())),
             Some(devices) => match devices.get(device_name) {
                 None => {
                     devices.insert(device_name.to_string(), device_id);
                     Ok(())
                 }
-                Some(_) => Result::Err(format!(
-                    "В комнате {} уже зарегистрировано устройство {}",
-                    room_name, device_name
+                Some(_) => Result::Err(DeviceError::DeviceDuplicated(
+                    room_name.to_string(),
+                    device_name.to_string(),
                 )),
             },
         }
@@ -114,7 +117,11 @@ impl Home {
 
 #[cfg(test)]
 mod tests {
-    use crate::{device_info_provider::DeviceId, smart_home::Home};
+    use crate::{
+        device_info_provider::DeviceId,
+        error::{DeviceError, RoomError},
+        smart_home::Home,
+    };
 
     #[test]
     fn create() {
@@ -131,8 +138,10 @@ mod tests {
     fn room_add_fail() {
         let mut source = Home::new("test".into());
         source.room_add("room_name").unwrap();
-        let result = source.room_add("room_name");
-        assert!(result != Ok(()));
+        match source.room_add("room_name") {
+            Result::Err(RoomError::Duplicated(_)) => {}
+            _ => assert!(false),
+        };
     }
     #[test]
     fn room_list() {
@@ -178,7 +187,10 @@ mod tests {
         let mut source = Home::new("test".into());
         source.room_add("кухня").unwrap();
         let result = source.device_add("гардероб", "device", DeviceId("type".into(), 0));
-        assert!(result != Ok(()));
+        match result {
+            Result::Err(DeviceError::NoRoom(_)) => {}
+            _ => assert!(false),
+        }
     }
     #[test]
     fn device_add_duplicate() {
@@ -188,7 +200,10 @@ mod tests {
             .device_add("кухня", "device", DeviceId("type".into(), 0))
             .unwrap();
         let result = source.device_add("кухня", "device", DeviceId("type".into(), 1));
-        assert!(result != Ok(()));
+        match result {
+            Result::Err(DeviceError::DeviceDuplicated(_, _)) => {}
+            _ => assert!(false),
+        }
     }
     #[test]
     fn device_list() {

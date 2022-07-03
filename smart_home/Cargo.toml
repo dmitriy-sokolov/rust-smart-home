@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 string-builder="0.2"
+thiserror = "1.0.30"
 provider = { path = "../provider" }
 power_socket = { path = "../power_socket" }
 thermometer = { path = "../thermometer" }

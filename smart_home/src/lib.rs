@@ -1,4 +1,5 @@
 pub mod device_info_provider;
+pub mod error;
 pub mod smart_home;
 
 #[cfg(test)]
