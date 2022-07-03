@@ -47,10 +47,10 @@ fn main() {
     );
 
     let mut home = Home::new("Квартира".into());
-    home.room_add("гостиная".into()).unwrap();
-    home.device_add("гостиная", "термометр".into(), thermometer_info)
+    home.room_add("гостиная").unwrap();
+    home.device_add("гостиная", "термометр", thermometer_info)
         .unwrap();
-    home.device_add("гостиная".into(), "подсветка".into(), power_socket_info)
+    home.device_add("гостиная", "подсветка", power_socket_info)
         .unwrap();
 
     let filter = [

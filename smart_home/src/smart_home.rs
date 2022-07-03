@@ -131,8 +131,11 @@ mod tests {
     #[test]
     fn room_add_success() {
         let mut source = Home::new("test".into());
-        let result = source.room_add("room_name").unwrap();
-        assert!(result == ());
+        let result = source.room_add("room_name");
+        match result {
+            Result::Ok(_) => {}
+            _ => panic!(),
+        }
     }
     #[test]
     fn room_add_fail() {
@@ -140,7 +143,7 @@ mod tests {
         source.room_add("room_name").unwrap();
         match source.room_add("room_name") {
             Result::Err(RoomError::Duplicated(_)) => {}
-            _ => assert!(false),
+            _ => panic!(),
         };
     }
     #[test]
@@ -162,7 +165,7 @@ mod tests {
         source.room_add("кухня").unwrap();
         source.room_remove("кухня");
         let result = source.room_list();
-        assert!(result.len() == 0);
+        assert!(result.is_empty());
     }
     #[test]
     fn room_remove_skip() {
@@ -189,7 +192,7 @@ mod tests {
         let result = source.device_add("гардероб", "device", DeviceId("type".into(), 0));
         match result {
             Result::Err(DeviceError::NoRoom(_)) => {}
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
     #[test]
@@ -202,7 +205,7 @@ mod tests {
         let result = source.device_add("кухня", "device", DeviceId("type".into(), 1));
         match result {
             Result::Err(DeviceError::DeviceDuplicated(_, _)) => {}
-            _ => assert!(false),
+            _ => panic!(),
         }
     }
     #[test]
@@ -216,8 +219,8 @@ mod tests {
     fn device_list_with_fake_room() {
         let mut source = Home::new("test".into());
         source.room_add("кухня").unwrap();
-        if let Result::Ok(_) = source.device_list("гардероб") {
-            assert!(false)
+        if source.device_list("гардероб").is_ok() {
+            panic!()
         }
     }
     #[test]

@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn default() {
         let source = PowerSocket::default();
-        assert!(source.active() == false);
+        assert!(!source.active());
         assert!(source.power() == 0.0);
     }
 
@@ -59,7 +59,7 @@ mod tests {
         let mut source = PowerSocket::default();
         source.turn_on();
 
-        assert!(source.active() == true);
+        assert!(source.active());
     }
 
     #[test]
@@ -68,6 +68,6 @@ mod tests {
         source.turn_on();
         source.turn_off();
 
-        assert!(source.active() == false);
+        assert!(!source.active());
     }
 }
