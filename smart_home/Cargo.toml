@@ -8,6 +8,9 @@ edition = "2021"
 [dependencies]
 string-builder="0.2"
 thiserror = "1.0.30"
+actix-web = "4"
+tokio = { version = "1.19.2", features = ["macros", "sync"] }
+serde = { version = "1", features = ["derive"]}
 provider = { path = "../provider" }
 power_socket = { path = "../power_socket" }
 thermometer = { path = "../thermometer" }

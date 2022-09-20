@@ -1,4 +1,5 @@
 use thiserror::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Error)]
 pub enum DeviceError {
@@ -8,7 +9,7 @@ pub enum DeviceError {
     DeviceDuplicated(String, String),
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Deserialize, Serialize)]
 pub enum RoomError {
     #[error("Комната {0} уже зарегистрирована")]
     Duplicated(String),
