@@ -65,13 +65,15 @@ async fn main() -> std::io::Result<()> {
         .unwrap();
 
     // let home = Arc::new(Mutex::new(home));
-    let data = Shared { home: Arc::new(home) };
+    let data = Shared {
+        home: Arc::new(home),
+    };
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new( data))
+            .app_data(Data::new(data.clone()))
             .service(web::resource("/home").route(web::get().to(web_home::detail)))
-        // .service(web::resource("/home/rooms").route(web::get().to(web_home::rooms)))
-        // .service(web::resource("/home/rooms").route(web::post().to(web_home::room_add)))
+            .service(web::resource("/home/rooms").route(web::get().to(web_home::rooms)))
+            // .service(web::resource("/home/rooms").route(web::post().to(web_home::room_add)))
         // .service(
         //     web::resource("/home/rooms/{room_name}")
         //         .route(web::delete().to(web_home::room_remove)),
@@ -99,27 +101,20 @@ pub mod web_home {
 
     use super::*;
 
-    pub async fn detail(_home: Data<Shared>) -> HttpResponse {
-        HttpResponse::Ok().json("test")
+    pub async fn detail(data: Data<Shared>) -> HttpResponse {
+        HttpResponse::Ok().json(data.home.get_name())
     }
 
-    // pub async fn detail(home: Data<Mutex<Home>>) -> HttpResponse {
-    //     let home = home.lock().await;
-    //     HttpResponse::Ok().json(home.get_name())
-    // }
+    pub async fn rooms(data: Data<Shared>) -> HttpResponse {
+        HttpResponse::Ok().json(data.home.room_list())
+    }
 
-    // pub async fn rooms(home: Data<Mutex<Home>>) -> HttpResponse {
-    //     let home = home.lock().await;
-    //     HttpResponse::Ok().json(home.room_list())
-    // }
-
-    // pub async fn room_add(home: Data<Mutex<Home>>, room_name: web::Json<String>) -> HttpResponse {
-    //     let home = home.lock().unwrap();
-    //     match home.room_add(&room_name.into_inner()) {
-    //         Ok(()) => HttpResponse::Ok().json(()),
-    //         Err(err) => HttpResponse::InternalServerError().json(err),
-    //     }
-    // }
+    pub async fn room_add(data: Data<Shared>, room_name: web::Json<String>) -> HttpResponse {
+        match data.home.room_add(&room_name.into_inner()) {
+            Ok(()) => HttpResponse::Ok().json(()),
+            Err(err) => HttpResponse::InternalServerError().json(err),
+        }
+    }
 
     // pub async fn room_remove(home: Data<Mutex<Home>>, room_name: web::Path<String>) -> HttpResponse {
     //     let home = home.lock().unwrap();
