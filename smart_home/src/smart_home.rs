@@ -50,7 +50,7 @@ impl Home {
             None => Result::Err(RoomError::NoRoom(room_name.to_string())),
             Some(devices) => {
                 let mut result: Vec<String> = Vec::with_capacity(devices.len());
-                for key in self.rooms.keys() {
+                for key in devices.keys() {
                     result.push(key.clone());
                 }
                 Result::Ok(result)
@@ -212,6 +212,9 @@ mod tests {
     fn device_list() {
         let mut source = Home::new("test".into());
         source.room_add("кухня").unwrap();
+        source
+            .device_add("кухня", "device", DeviceId("type".into(), 0))
+            .unwrap();
         let result = source.device_list("кухня").unwrap();
         assert!(result.len() == 1);
     }
@@ -232,6 +235,6 @@ mod tests {
             .unwrap();
         source.device_remove("кухня", "device");
         let result = source.device_list("кухня").unwrap();
-        assert!(result.len() == 1);
+        assert!(result.len() == 0);
     }
 }

@@ -1,5 +1,5 @@
-use thiserror::Error;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum DeviceError {
